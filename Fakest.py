@@ -98,7 +98,6 @@ class Fakest:
             expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.btn.btn-primary.pointer')))
         self.confirmLesson()
 
-
     def confirmLesson(self):
         time.sleep(1)
         self.driver.find_element_by_css_selector('.btn.btn-primary.pointer').click()
