@@ -13,6 +13,7 @@ class Fakest:
         self.driver = webdriver.Chrome()
         WebDriverWait(self.driver, 2)
         self.driver.get(self.baseUrl)
+        self.lessons = []
 
     def login(self, studentNum, studentPass):
         self.driver.find_element_by_xpath('//*[@id="UserName"]').send_keys(studentNum)
@@ -28,6 +29,40 @@ class Fakest:
         self.driver.quit()
 
     def checkUrl(self, url, message):
-        if self.driver.current_url == url:
+        if self.driver.current_url != url:
             print(message)
             self.quit()
+
+    def parseHTML(self):
+        return BeautifulSoup(self.driver.page_source, 'html.parser')
+
+    def parseLessons(self):
+        WebDriverWait(self.driver, 10).until(
+            expected_conditions.presence_of_element_located((By.XPATH, '//*[@id="courses"]/table')))
+        lessons = self.parseHTML().find_all("a", {"class": "coursename"})
+        for lesson in lessons:
+            self.lessons.append([self.baseUrl + lesson['href'], lesson.text])
+
+    def whichLesson(self, selectedUrl=None):
+        if selectedUrl is None:
+            self.parseLessons()
+            print("###################################")
+            # print name of lessons
+            order = 0
+            for l in self.lessons:
+                print("{} <-> {}".format(order, l[1]))
+                order += 1
+            print("###################################")
+            while True:
+                try:
+                    val = int(input('Which is your lesson? : '))
+                    if val < 0 or val >= len(self.lessons):
+                        raise Exception("!")
+                    else:
+                        self.driver.get(self.lessons[val][0])
+                        # go to details page of selected lesson
+                    break
+                except:
+                    print("That's not a valid option!")
+        else:
+            print(selectedUrl)
