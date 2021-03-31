@@ -14,6 +14,7 @@ class Fakest:
         WebDriverWait(self.driver, 2)
         self.driver.get(self.baseUrl)
         self.lessons = []
+        self.weeks = []
 
     def login(self, studentNum, studentPass):
         self.driver.find_element_by_xpath('//*[@id="UserName"]').send_keys(studentNum)
@@ -43,6 +44,16 @@ class Fakest:
         for lesson in lessons:
             self.lessons.append([self.baseUrl + lesson['href'], lesson.text])
 
+    def parseWeeks(self):
+        weeks = self.parseHTML().find_all("div", {"class": "cardItem"})
+        for week in weeks:
+            card = week.find("div", {"class": "cardviewtitle"})
+            if card is not None:
+                if card.find("span", {"class": "badge label-activity-virtualclass"}) is not None:
+                    name = card.find("span", {"class": "cardViewActivityName"}).text
+                    a = card.find("a", {"class": "view"})
+                    self.weeks.append([self.baseUrl + a['href'], name])
+
     def whichLesson(self, selectedUrl=None):
         if selectedUrl is None:
             self.parseLessons()
@@ -65,4 +76,20 @@ class Fakest:
                 except:
                     print("That's not a valid option!")
         else:
-            print(selectedUrl)
+            self.driver.get(selectedUrl)
+
+    def whichWeek(self):
+        self.parseWeeks()
+        # default last week
+        print("###################################")
+        for w in self.weeks:
+            print(w[1])
+        print("Selected week => {}".format(self.weeks[len(self.weeks) - 1][1]))
+        self.driver.get(self.weeks[len(self.weeks) - 1][0])
+        WebDriverWait(self.driver, 60).until(
+            expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.btn.btn-primary.pointer')))
+        self.confirmLesson()
+
+    def confirmLesson(self):
+        time.sleep(1)
+        self.driver.find_element_by_css_selector('.btn.btn-primary.pointer').click()
