@@ -8,30 +8,37 @@ from selenium.webdriver.common.by import By
 
 class Fakest:
 
-    def __init__(self):
+    def __init__(self, alertLabel):
         self.baseUrl = "https://lms.bandirma.edu.tr"
         self.driver = webdriver.Chrome()
         WebDriverWait(self.driver, 2)
         self.driver.get(self.baseUrl)
         self.lessons = []
         self.weeks = []
+        self.alertLabel = alertLabel
 
     def login(self, studentNum, studentPass):
         self.driver.find_element_by_xpath('//*[@id="UserName"]').send_keys(studentNum)
         self.driver.find_element_by_xpath('//*[@id="btnLoginName"]').click()
 
+        self.alertLabel.setText("Wrote your student number")
+
         self.driver.find_element_by_xpath('//*[@id="Password"]').send_keys(studentPass)
         self.driver.find_element_by_xpath('//*[@id="btnLoginPass"]').click()
 
+        self.alertLabel.setText("Wrote your password number")
+
         # check login operation
         self.checkUrl("https://lms.bandirma.edu.tr/Home/Index", "An error occurred while logging in")
+
+        self.alertLabel.setText("Logged in your LMS account")
 
     def quit(self):
         self.driver.quit()
 
     def checkUrl(self, url, message):
         if self.driver.current_url != url:
-            print(message)
+            self.alertLabel.setText(message)
             self.quit()
 
     def parseHTML(self):
@@ -77,6 +84,7 @@ class Fakest:
                     print("That's not a valid option!")
         else:
             self.driver.get(selectedUrl)
+            self.alertLabel.setText("Loading your selected lesson")
 
     def whichWeek(self):
         self.parseWeeks()
@@ -90,6 +98,10 @@ class Fakest:
             expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '.btn.btn-primary.pointer')))
         self.confirmLesson()
 
+
     def confirmLesson(self):
         time.sleep(1)
         self.driver.find_element_by_css_selector('.btn.btn-primary.pointer').click()
+        self.alertLabel.setText("Confirmed alert box")
+        time.sleep(5)
+        self.alertLabel.setText("Fakest is watching your lesson! :)")
